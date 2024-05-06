@@ -1,0 +1,3 @@
+Nome da planilha: receita
+Número total de linhas: 26
+Média: 11.8716
