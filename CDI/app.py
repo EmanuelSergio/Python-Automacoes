@@ -5,6 +5,85 @@ from bs4 import BeautifulSoup
 import openpyxl  
 import pandas as pd
 
+
+
+
+
+
+# Abrir o navegador
+driver = webdriver.Chrome()
+driver.get('https://investidor10.com.br/indices/cdi/')
+
+# Obter o código fonte da página após o carregamento completo
+req = driver.page_source
+
+# Utilizar BeautifulSoup para analisar o código HTML
+soup = BeautifulSoup(req, 'html.parser')
+
+# Encontrar a tabela desejada com base na classe
+tabela = soup.find('table', attrs={"class": "table table-bordered table-striped"})
+
+# Criar um novo arquivo Excel
+workbook = openpyxl.Workbook()
+sheet_receita = workbook.active
+sheet_receita.title = 'receita'
+
+# Verificar se a tabela foi encontrada
+if tabela:
+    # Iterar sobre as linhas da tabela
+    linhas = tabela.find_all('tr')
+
+    # Definir cabeçalho da planilha
+    cabecalho = ['Ano/Mês', 'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez', 'Acumulado']
+    sheet_receita.append(cabecalho)
+
+    for linha in linhas:
+        # Encontrar todas as células (colunas) da linha
+        celulas = linha.find_all('td')
+        
+        # Verificar se há células na linha
+        if celulas:
+            # Obter o texto da primeira célula (que deve conter a data)
+            data_texto = celulas[0].get_text(strip=True)
+            
+            # Verificar se a linha começa com uma data válida (ano maior que 1999)
+            if data_texto > '1999':
+                # Obter os valores das células como números (se possível)
+                valores_linha = []
+                
+                for celula in celulas:
+                    # Obter o texto da célula
+                    valor_celula = celula.get_text(strip=True)
+                    
+                    # Converter o valor para número (se possível)
+                    try:
+                        valor_num = float(valor_celula.replace(',', '.'))  # Substituir ',' por '.' para números decimais
+                    except ValueError:
+                        # Se não for possível converter para float, atribuir None
+                        valor_num = None
+                    
+                    # Adicionar o valor à lista de valores da linha
+
+                    
+                    valores_linha.append(valor_num)
+                
+                # Adicionar os valores à planilha
+                sheet_receita.append(valores_linha)
+
+# Salvar o arquivo Excel
+workbook.save('receita.xlsx')
+
+# Fechar o navegador
+driver.quit()
+
+
+
+
+
+
+
+
+
 def calcularValores(arquivoExcel, nomePlanilha, coluna, linhas):
     try:
         df = pd.read_excel(arquivoExcel, sheet_name=nomePlanilha)  # Lê a planilha específica
@@ -29,6 +108,7 @@ def calcularValores(arquivoExcel, nomePlanilha, coluna, linhas):
         if pd.notna(valor_celula) and pd.api.types.is_numeric_dtype(df[coluna].dtype):
             tot += valor_celula
             count += 1
+            
     
     if count == 0:
         print("Nenhum valor numérico encontrado para calcular a média.")
@@ -45,99 +125,5 @@ mediaCdi = calcularValores(arquivo, nomePlanilha, colunaCalculo, linhasEscolhida
 
 if mediaCdi is not None:
     print(f"Média dos valores da coluna '{colunaCalculo}' na planilha '{nomePlanilha}': {mediaCdi}")
-
-
-
-# Abrir o navegador
-driver = webdriver.Chrome()
-driver.get('https://investidor10.com.br/indices/cdi/')
-
-# Obter o código fonte da página após o carregamento completo
-req = driver.page_source
-
-# Utilizar BeautifulSoup para analisar o código HTML
-soup = BeautifulSoup(req, 'html.parser')
-
-# Encontrar a tabela desejada com base na classe
-tabela = soup.find('table', attrs={"class":"table table-bordered table-striped"})
-
-#print(tabela)
-
-linha = tabela.findChildren('td')
-
-workbook = openpyxl.Workbook()
-#criando a pagina produtos
-workbook.create_sheet('receita')
-sheet_receita = workbook['receita']
-
-
-
-#seleciono a pagina produtos
-
-
-
-# Verificar se a tabela foi encontrada
-if tabela:
-    # Criar uma lista para armazenar os valores das células
-    valores_celulas = []
-
-    # Iterar sobre as linhas da tabela
-    linhas = tabela.find_all('tr')
-
-
-
-
-    for linha in linhas:
-        # Encontrar todas as células (colunas) da linha
-        celulas = linha.findChildren('td')
-        
-        
-        # Verificar se a linha começa com uma data válida
-        if celulas:
-            # Obter o texto da primeira célula (que deve conter a data)
-            data_texto = celulas[0].get_text(strip=True)
-            
-
-            if data_texto > "1999":
-                linha = linha.get_text()
-                sheet_receita['A1'].value = 'Ano/Mês'
-                sheet_receita['B1'].value = 'Jan'
-                sheet_receita['C1'].value = 'Fev'
-                sheet_receita['D1'].value = 'Mar'
-                sheet_receita['E1'].value = 'Abr'
-                sheet_receita['F1'].value = 'Mai'
-                sheet_receita['G1'].value = 'Jun'
-                sheet_receita['H1'].value = 'Jul'
-                sheet_receita['I1'].value = 'Ago'
-                sheet_receita['J1'].value = 'Set'
-                sheet_receita['K1'].value = 'Out'
-                sheet_receita['L1'].value = 'Nov'
-                sheet_receita['M1'].value = 'Dez'
-                sheet_receita['N1'].value = 'Acumulado'
-
-                #valores_linha = [linha.get_text(strip=True) for celula in celulas]
-                valores_linha = [celula.get_text(strip=True) for celula in celulas]
-                
-                for celula in celulas:
-                    valor_celula = celula.get_text(strip=True)
-
-                    try:
-                        valor_num = float(valor_celula.replace(',', '.'))  # Substituir ',' por '.' para números decimais
-
-                    except ValueError:
-                        # Se não for possível converter para float, manter como string
-                        valor_num = valor_celula
-
-                if valores_linha:
-                    data_texto = valores_linha[0]
-                    sheet_receita.append(valores_linha)
-
-
-# Fechar o navegador
-workbook.save('receita.xlsx')
-
-driver.quit()
-
-
 
 
