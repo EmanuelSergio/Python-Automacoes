@@ -26,3 +26,4 @@ pip python automacaoCdi.py
 
 - Você também pode executar o programa de uma forma mais simples, apenas abrindo o executavel do arquivo que está no link abaixo
 
+https://drive.google.com/drive/folders/1Q_UvPLHLeIl0HBBDrnpyB7Dmw_CdhYmW?usp=sharing
