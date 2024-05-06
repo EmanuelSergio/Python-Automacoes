@@ -1,18 +1,44 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By 
+from bs4 import BeautifulSoup
 import openpyxl  
 
-#acessar site https://www.pichau.com.br/hardware/placa-m-e
+
 
 driver = webdriver.Chrome()
-driver.get('https://www.cacaushow.com.br/categoria/biscoito')
+driver.get('https://investidor10.com.br/indices/cdi/')
+req = driver.page_source
+soup = BeautifulSoup(req, 'html.parser')
+tabela = soup.find('table', attrs={"class":"table table-bordered table-striped"})
+
+contador = 0
+
+
+
+if tabela:
+    # Criar uma lista para armazenar os valores das células
+    valores_celulas = []
+
+    # Iterar sobre as linhas da tabela
+    linhas = tabela.find_all('tr')
+    for linha in linhas:
+        # Encontrar todas as células (colunas) da linha
+        celulas = linha.find_all('td')
+        for celula in celulas:
+            # Obter o texto da célula e adicionar à lista de valores
+            valor_celula = celula.get_text(strip=True)
+            valores_celulas.append(valor_celula)
+
+    # Imprimir os valores das células
+    for valor in valores_celulas:
+        print(valor) 
+
+        
 
 #extrair todos os titulos
 
 
-
-titulos = driver.find_elements(By.XPATH, "//div[@class='pdp-link product-name-cap']")
-
+"""
 
 #extrair preços antigos
 precosAntigo = driver.find_elements(By.XPATH,"//span[@class='strike-through list']")
@@ -26,7 +52,6 @@ workbook = openpyxl.Workbook()
 workbook.create_sheet('produtos')
 #seleciono a pagina produtos
 sheet_produtos = workbook['produtos']
-
 
 sheet_produtos['A1'].value = 'Produto'
 sheet_produtos['B1'].value = 'Preço antigo'
@@ -49,33 +74,4 @@ for titulo, precoAntigo, preco in zip(titulos, precosAntigo, precos):
 workbook.save('produtos.xlsx')
 
 
-def calcularValores(arquivoExcel, coluna, linhas):
-
-    df=pd.read_excel(arquivoExcel)
-
-    if coluna not in df.columns:
-        print('coluna n encontrada')
-        return
-    
-    tot = 0
-
-    for linha in linhas:
-
-        if linha >= len(df):
-            print(f"A linha {linha} está fora do intervalo do arquivo Excel.")
-            continue
-
-    valor_celula = df.loc[linha, coluna]
-
-    if pd.notna(valor_celula) and pd.api.types.is_numeric_dtype(df[coluna].dtype):
-        tot += valor_celula
-        
-
-    return tot / coluna
-
-arquivo = 'receita.xlsx' 
-colunaCalculo = 'N'
-linhasEscolhidas = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]
-
-mediaCdi = calcularValores(arquivo, colunaCalculo, linhasEscolhidas)
-print(mediaCdi)
+"""
